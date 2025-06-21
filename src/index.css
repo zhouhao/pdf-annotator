@@ -1,0 +1,148 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 0.5rem;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%
+  }
+
+  .dark {
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%
+  }
+}
+
+
+
+img {
+  object-position: top;
+}
+
+/* PDF.js 相关样式 */
+.react-pdf__Document {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.react-pdf__Page {
+  max-width: calc(100% - 2em);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+  margin: 1em;
+  background: white;
+}
+
+.react-pdf__Page__canvas {
+  display: block;
+  user-select: text;
+}
+
+.react-pdf__Page__textContent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0.2;
+  transition: opacity 0.2s;
+}
+
+.react-pdf__Page__textContent:hover {
+  opacity: 1;
+}
+
+.react-pdf__Page__annotations {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* 缩略图样式 */
+.thumbnail-document .react-pdf__Document {
+  display: inline-block;
+}
+
+.thumbnail-page .react-pdf__Page {
+  max-width: 100%;
+  margin: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.thumbnail-page .react-pdf__Page__canvas {
+  width: 100% !important;
+  height: auto !important;
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* 文本选择样式 */
+::selection {
+  background-color: #fef08a;
+  color: #374151;
+}
+
+::-moz-selection {
+  background-color: #fef08a;
+  color: #374151;
+}
+
+/* 面板调整手柄样式 */
+[data-panel-resize-handle-enabled] {
+  transition: background-color 0.2s ease;
+}
+
+[data-panel-resize-handle-enabled]:hover {
+  background-color: #3b82f6 !important;
+}
+
+/* 加载动画 */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .react-pdf__Page {
+    margin: 0.5em;
+  }
+  
+  .thumbnail-page .react-pdf__Page {
+    margin: 0;
+  }
+}
