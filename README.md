@@ -3,3 +3,6 @@
 1. page preview
 2. main pdf viewer
 3. annotation bar
+
+
+demo: https://pdf-annotator.pages.dev/
