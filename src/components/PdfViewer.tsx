@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Document, Page, pdfjs} from 'react-pdf';
 import {ChevronLeft, ChevronRight, Download, RotateCw, ZoomIn, ZoomOut} from 'lucide-react';
-import {Note, Selection} from '../types/pdf';
+import {Note, PdfSource, Selection} from '../types/pdf';
 
 // 设置PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -10,23 +10,25 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 ).toString();
 
 interface PdfViewerProps {
-  file: File | null;
+  source: PdfSource | null;
   currentPage: number;
   numPages: number;
   onPageChange: (pageNumber: number) => void;
   onNumPagesChange: (numPages: number) => void;
   onTextSelect: (selection: Selection) => void;
   highlightedNotes: Note[];
+  fileName?: string;
 }
 
 export const PdfViewer: React.FC<PdfViewerProps> = ({
-                                                      file,
+                                                      source,
                                                       currentPage,
                                                       numPages,
                                                       onPageChange,
                                                       onNumPagesChange,
                                                       onTextSelect,
                                                       highlightedNotes,
+                                                      fileName,
                                                     }) => {
   const [scale, setScale] = useState(1.2);
   const [rotation, setRotation] = useState(0);
@@ -154,20 +156,30 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
   };
 
   const downloadFile = () => {
-    if (file) {
-      const url = URL.createObjectURL(file);
+    if (!source) return;
+
+    if (typeof source === 'string') {
+      // For URL source
+      const a = document.createElement('a');
+      a.href = source;
+      a.target = '_blank';
+      a.download = fileName || 'document.pdf';
+      a.click();
+    } else {
+      // For File source
+      const url = URL.createObjectURL(source);
       const a = document.createElement('a');
       a.href = url;
-      a.download = file.name;
+      a.download = source.name;
       a.click();
       URL.revokeObjectURL(url);
     }
   };
 
-  if (!file) {
+  if (!source) {
     return (
       <div className="flex-1 flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500">请上传PDF文件开始阅读</p>
+        <p className="text-gray-500">请上传PDF文件或输入URL开始阅读</p>
       </div>
     );
   }
@@ -252,7 +264,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
             )}
 
             <Document
-              file={file}
+              file={source}
               onLoadSuccess={handleDocumentLoadSuccess}
               onLoadError={handleDocumentLoadError}
               loading={<div className="p-8 text-center text-gray-600">加载PDF文档中...</div>}

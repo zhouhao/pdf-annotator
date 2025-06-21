@@ -1,5 +1,6 @@
 import React from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
+import { PdfSource } from '../types/pdf';
 
 // 设置PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -8,22 +9,24 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 ).toString();
 
 interface ThumbnailPanelProps {
-  file: File | null;
+  source: PdfSource | null;
   numPages: number;
   currentPage: number;
   onPageClick: (pageNumber: number) => void;
+  fileName?: string;
 }
 
 export const ThumbnailPanel: React.FC<ThumbnailPanelProps> = ({
-  file,
+  source,
   numPages,
   currentPage,
   onPageClick,
+  fileName,
 }) => {
-  if (!file) {
+  if (!source) {
     return (
       <div className="w-full h-full bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-500">请上传PDF文件</p>
+        <p className="text-gray-500">请上传PDF文件或输入URL</p>
       </div>
     );
   }
@@ -50,7 +53,7 @@ export const ThumbnailPanel: React.FC<ThumbnailPanelProps> = ({
                     第 {pageNumber} 页
                   </div>
                   <div className="flex justify-center">
-                    <Document file={file} className="thumbnail-document">
+                    <Document file={source} className="thumbnail-document">
                       <Page
                         pageNumber={pageNumber}
                         width={120}

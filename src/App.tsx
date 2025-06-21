@@ -5,23 +5,35 @@ import { ThumbnailPanel } from './components/ThumbnailPanel';
 import { PdfViewer } from './components/PdfViewer';
 import { NotesPanel } from './components/NotesPanel';
 import { NoteModal } from './components/NoteModal';
-import { Note, Selection } from './types/pdf';
+import { Note, PdfSource, Selection } from './types/pdf';
 import { NotesStorage } from './lib/storage';
 import { v4 as uuidv4 } from 'uuid';
-import { BookOpen, FileText } from 'lucide-react';
+import { BookOpen, FileText, Link } from 'lucide-react';
 
 function App() {
-  const [file, setFile] = useState<File | null>(null);
+  const [pdfSource, setPdfSource] = useState<PdfSource | null>(null);
+  const [fileName, setFileName] = useState<string | undefined>(undefined);
   const [numPages, setNumPages] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [notes, setNotes] = useState<Note[]>(NotesStorage.loadNotes());
   const [selectedText, setSelectedText] = useState<Selection | null>(null);
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
+  const [urlInput, setUrlInput] = useState('');
 
   const handleFileSelect = useCallback((selectedFile: File) => {
-    setFile(selectedFile);
+    setPdfSource(selectedFile);
+    setFileName(selectedFile.name);
     setCurrentPage(1);
     setNumPages(0);
+  }, []);
+
+  const handleUrlSubmit = useCallback((url: string) => {
+    if (url && url.trim()) {
+      setPdfSource(url.trim());
+      setFileName(url.split('/').pop() || 'document.pdf');
+      setCurrentPage(1);
+      setNumPages(0);
+    }
   }, []);
 
   const handlePageChange = useCallback((pageNumber: number) => {
@@ -83,14 +95,53 @@ function App() {
                 <p className="text-sm text-gray-600">专业的PDF阅读和备注工具</p>
               </div>
             </div>
-            
-            {file && (
+
+            {pdfSource ? (
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2 text-gray-600">
-                  <FileText className="w-4 h-4" />
-                  <span className="text-sm font-medium">{file.name}</span>
+                  {typeof pdfSource === 'string' ? (
+                    <Link className="w-4 h-4" />
+                  ) : (
+                    <FileText className="w-4 h-4" />
+                  )}
+                  <span className="text-sm font-medium">{fileName}</span>
                 </div>
-                <FileUpload onFileSelect={handleFileSelect} hasFile={true} />
+                <div className="flex items-center gap-2">
+                  <div className="flex">
+                    <input
+                      type="text"
+                      value={urlInput}
+                      onChange={(e) => setUrlInput(e.target.value)}
+                      placeholder="https://example.com/document.pdf"
+                      className="px-3 py-1 text-sm border border-gray-300 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-blue-500 w-64"
+                    />
+                    <button
+                      onClick={() => handleUrlSubmit(urlInput)}
+                      className="px-3 py-1 text-sm bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 transition-colors"
+                    >
+                      加载
+                    </button>
+                  </div>
+                  <FileUpload onFileSelect={handleFileSelect} hasFile={true} />
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <div className="flex">
+                  <input
+                    type="text"
+                    value={urlInput}
+                    onChange={(e) => setUrlInput(e.target.value)}
+                    placeholder="https://example.com/document.pdf"
+                    className="px-3 py-1 text-sm border border-gray-300 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-blue-500 w-64"
+                  />
+                  <button
+                    onClick={() => handleUrlSubmit(urlInput)}
+                    className="px-3 py-1 text-sm bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 transition-colors"
+                  >
+                    加载
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -99,17 +150,18 @@ function App() {
 
       {/* 主内容区域 */}
       <main className="flex-1 overflow-hidden">
-        {!file ? (
+        {!pdfSource ? (
           <FileUpload onFileSelect={handleFileSelect} hasFile={false} />
         ) : (
           <PanelGroup direction="horizontal" className="h-full">
             {/* 左侧缩略图面板 */}
             <Panel defaultSize={20} minSize={15} maxSize={30}>
               <ThumbnailPanel
-                file={file}
+                source={pdfSource}
                 numPages={numPages}
                 currentPage={currentPage}
                 onPageClick={handlePageChange}
+                fileName={fileName}
               />
             </Panel>
 
@@ -118,13 +170,14 @@ function App() {
             {/* 中间PDF阅读器 */}
             <Panel defaultSize={60} minSize={40}>
               <PdfViewer
-                file={file}
+                source={pdfSource}
                 currentPage={currentPage}
                 numPages={numPages}
                 onPageChange={handlePageChange}
                 onNumPagesChange={handleNumPagesChange}
                 onTextSelect={handleTextSelect}
                 highlightedNotes={currentPageNotes}
+                fileName={fileName}
               />
             </Panel>
 

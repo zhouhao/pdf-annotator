@@ -12,9 +12,11 @@ export interface Note {
   timestamp: number;
 }
 
+export type PdfSource = File | string;
+
 export interface PdfDocument {
   name: string;
-  file: File;
+  source: PdfSource;
   numPages: number;
 }
 
