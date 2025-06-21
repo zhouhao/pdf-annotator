@@ -2,7 +2,10 @@ import React from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 
 // 设置PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url,
+).toString();
 
 interface ThumbnailPanelProps {
   file: File | null;

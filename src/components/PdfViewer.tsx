@@ -4,7 +4,10 @@ import {ChevronLeft, ChevronRight, Download, RotateCw, ZoomIn, ZoomOut} from 'lu
 import {Note, Selection} from '../types/pdf';
 
 // 设置PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url,
+).toString();
 
 interface PdfViewerProps {
   file: File | null;
