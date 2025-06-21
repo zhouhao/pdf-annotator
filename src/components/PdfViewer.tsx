@@ -1,7 +1,7 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { Document, Page, pdfjs } from 'react-pdf';
-import { ZoomIn, ZoomOut, ChevronLeft, ChevronRight, RotateCw, Download } from 'lucide-react';
-import { Note, Selection } from '../types/pdf';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {Document, Page, pdfjs} from 'react-pdf';
+import {ChevronLeft, ChevronRight, Download, RotateCw, ZoomIn, ZoomOut} from 'lucide-react';
+import {Note, Selection} from '../types/pdf';
 
 // 设置PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
@@ -17,20 +17,20 @@ interface PdfViewerProps {
 }
 
 export const PdfViewer: React.FC<PdfViewerProps> = ({
-  file,
-  currentPage,
-  numPages,
-  onPageChange,
-  onNumPagesChange,
-  onTextSelect,
-  highlightedNotes,
-}) => {
+                                                      file,
+                                                      currentPage,
+                                                      numPages,
+                                                      onPageChange,
+                                                      onNumPagesChange,
+                                                      onTextSelect,
+                                                      highlightedNotes,
+                                                    }) => {
   const [scale, setScale] = useState(1.2);
   const [rotation, setRotation] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const pageRef = useRef<HTMLDivElement>(null);
 
-  const handleDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
+  const handleDocumentLoadSuccess = ({numPages}: { numPages: number }) => {
     onNumPagesChange(numPages);
     setIsLoading(false);
   };
@@ -139,19 +139,19 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
             disabled={currentPage <= 1}
             className="p-2 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-4 h-4"/>
           </button>
-          
+
           <span className="px-3 py-1 bg-gray-100 rounded text-sm">
             {currentPage} / {numPages}
           </span>
-          
+
           <button
             onClick={handleNextPage}
             disabled={currentPage >= numPages}
             className="p-2 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-4 h-4"/>
           </button>
         </div>
 
@@ -161,18 +161,18 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
             onClick={handleZoomOut}
             className="p-2 rounded bg-gray-100 hover:bg-gray-200"
           >
-            <ZoomOut className="w-4 h-4" />
+            <ZoomOut className="w-4 h-4"/>
           </button>
-          
+
           <span className="px-3 py-1 bg-gray-100 rounded text-sm min-w-[60px] text-center">
             {Math.round(scale * 100)}%
           </span>
-          
+
           <button
             onClick={handleZoomIn}
             className="p-2 rounded bg-gray-100 hover:bg-gray-200"
           >
-            <ZoomIn className="w-4 h-4" />
+            <ZoomIn className="w-4 h-4"/>
           </button>
 
           {/* 旋转控制 */}
@@ -180,7 +180,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
             onClick={handleRotate}
             className="p-2 rounded bg-gray-100 hover:bg-gray-200"
           >
-            <RotateCw className="w-4 h-4" />
+            <RotateCw className="w-4 h-4"/>
           </button>
 
           {/* 下载按钮 */}
@@ -188,14 +188,14 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
             onClick={downloadFile}
             className="p-2 rounded bg-gray-100 hover:bg-gray-200"
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-4 h-4"/>
           </button>
         </div>
       </div>
 
       {/* PDF显示区域 */}
       <div className="flex-1 overflow-auto p-4">
-        <div 
+        <div
           ref={pageRef}
           className="flex justify-center"
           onMouseUp={handleTextSelection}
@@ -206,7 +206,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                 <div className="text-gray-600">加载中...</div>
               </div>
             )}
-            
+
             <Document
               file={file}
               onLoadSuccess={handleDocumentLoadSuccess}
