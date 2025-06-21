@@ -32,6 +32,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
   const [rotation, setRotation] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const pageRef = useRef<HTMLDivElement>(null);
+  const pdfPageRef = useRef<HTMLDivElement>(null);
 
   const handleDocumentLoadSuccess = ({numPages}: { numPages: number }) => {
     onNumPagesChange(numPages);
@@ -95,16 +96,56 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
 
     const range = selection.getRangeAt(0);
     const rect = range.getBoundingClientRect();
-    const containerRect = pageRef.current.getBoundingClientRect();
+    // Find the relative container which is the parent of the PDF page
+    const relativeContainer = pageRef.current.querySelector('.relative');
+    if (!relativeContainer) return;
+
+    const containerRect = relativeContainer.getBoundingClientRect();
+
+    // Calculate position based on rotation
+    let x = rect.left - containerRect.left;
+    let y = rect.top - containerRect.top;
+    let width = rect.width;
+    let height = rect.height;
+
+    // Adjust position based on rotation
+    if (rotation === 90) {
+      const pageWidth = pdfPageRef.current?.clientWidth || 0;
+      const tempX = y;
+      y = pageWidth - x - width;
+      x = tempX;
+      const tempWidth = width;
+      width = height;
+      height = tempWidth;
+    } else if (rotation === 180) {
+      const pageWidth = pdfPageRef.current?.clientWidth || 0;
+      const pageHeight = pdfPageRef.current?.clientHeight || 0;
+      x = pageWidth - x - width;
+      y = pageHeight - y - height;
+    } else if (rotation === 270) {
+      const pageHeight = pdfPageRef.current?.clientHeight || 0;
+      const tempY = x;
+      x = pageHeight - y - height;
+      y = tempY;
+      const tempWidth = width;
+      width = height;
+      height = tempWidth;
+    }
+
+    // Adjust for scale (divide by scale since we'll multiply by scale when rendering)
+    x = x / scale;
+    y = y / scale;
+    width = width / scale;
+    height = height / scale;
 
     const selectionData: Selection = {
       text: selectedText,
       pageNumber: currentPage,
       position: {
-        x: rect.left - containerRect.left,
-        y: rect.top - containerRect.top,
-        width: rect.width,
-        height: rect.height,
+        x,
+        y,
+        width,
+        height,
       },
     };
 
@@ -226,24 +267,65 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                 className="pdf-page"
                 loading={<div className="p-8 text-center text-gray-600">加载页面中...</div>}
                 error={<div className="p-8 text-center text-red-600">页面加载失败</div>}
+                inputRef={pdfPageRef}
               />
             </Document>
 
             {/* 高亮显示备注位置 */}
             {highlightedNotes
               .filter(note => note.pageNumber === currentPage)
-              .map(note => (
-                <div
-                  key={note.id}
-                  className="absolute border-2 border-yellow-400 bg-yellow-200 bg-opacity-30 pointer-events-none"
-                  style={{
+              .map(note => {
+                // Calculate position based on rotation
+                let style: React.CSSProperties = {};
+
+                if (rotation === 0) {
+                  style = {
                     left: note.position.x * scale,
                     top: note.position.y * scale,
                     width: note.position.width * scale,
                     height: note.position.height * scale,
-                  }}
-                />
-              ))}
+                  };
+                } else if (rotation === 90) {
+                  const pageWidth = pdfPageRef.current?.clientWidth || 0;
+                  style = {
+                    left: note.position.y * scale,
+                    top: pageWidth - (note.position.x + note.position.width) * scale,
+                    width: note.position.height * scale,
+                    height: note.position.width * scale,
+                    transform: 'rotate(90deg)',
+                    transformOrigin: 'top left',
+                  };
+                } else if (rotation === 180) {
+                  const pageWidth = pdfPageRef.current?.clientWidth || 0;
+                  const pageHeight = pdfPageRef.current?.clientHeight || 0;
+                  style = {
+                    left: pageWidth - (note.position.x + note.position.width) * scale,
+                    top: pageHeight - (note.position.y + note.position.height) * scale,
+                    width: note.position.width * scale,
+                    height: note.position.height * scale,
+                    transform: 'rotate(180deg)',
+                    transformOrigin: 'center',
+                  };
+                } else if (rotation === 270) {
+                  const pageHeight = pdfPageRef.current?.clientHeight || 0;
+                  style = {
+                    left: pageHeight - (note.position.y + note.position.height) * scale,
+                    top: note.position.x * scale,
+                    width: note.position.height * scale,
+                    height: note.position.width * scale,
+                    transform: 'rotate(270deg)',
+                    transformOrigin: 'top left',
+                  };
+                }
+
+                return (
+                  <div
+                    key={note.id}
+                    className="absolute border-2 border-yellow-400 bg-yellow-200 bg-opacity-30 pointer-events-none"
+                    style={style}
+                  />
+                );
+              })}
           </div>
         </div>
       </div>
