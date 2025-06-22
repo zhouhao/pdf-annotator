@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Document, Page, pdfjs} from 'react-pdf';
-import {ChevronLeft, ChevronRight, Download, RotateCw, ZoomIn, ZoomOut} from 'lucide-react';
+import {ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Maximize} from 'lucide-react';
 import {Note, PdfSource, Selection} from '../types/pdf';
 
 // Set up PDF.js worker
@@ -31,7 +31,6 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                                                       fileName,
                                                     }) => {
   const [scale, setScale] = useState(1.2);
-  const [rotation, setRotation] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const pageRef = useRef<HTMLDivElement>(null);
   const pdfPageRef = useRef<HTMLDivElement>(null);
@@ -55,9 +54,10 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
     setScale(prev => Math.max(prev - 0.2, 0.5));
   };
 
-  const handleRotate = () => {
-    setRotation(prev => (prev + 90) % 360);
+  const handleResetZoom = () => {
+    setScale(1.0);
   };
+
 
   const handlePrevPage = () => {
     if (currentPage > 1) {
@@ -104,35 +104,11 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
 
     const containerRect = relativeContainer.getBoundingClientRect();
 
-    // Calculate position based on rotation
+    // Calculate position
     let x = rect.left - containerRect.left;
     let y = rect.top - containerRect.top;
     let width = rect.width;
     let height = rect.height;
-
-    // Adjust position based on rotation
-    if (rotation === 90) {
-      const pageWidth = pdfPageRef.current?.clientWidth || 0;
-      const tempX = y;
-      y = pageWidth - x - width;
-      x = tempX;
-      const tempWidth = width;
-      width = height;
-      height = tempWidth;
-    } else if (rotation === 180) {
-      const pageWidth = pdfPageRef.current?.clientWidth || 0;
-      const pageHeight = pdfPageRef.current?.clientHeight || 0;
-      x = pageWidth - x - width;
-      y = pageHeight - y - height;
-    } else if (rotation === 270) {
-      const pageHeight = pdfPageRef.current?.clientHeight || 0;
-      const tempY = x;
-      x = pageHeight - y - height;
-      y = tempY;
-      const tempWidth = width;
-      width = height;
-      height = tempWidth;
-    }
 
     // Adjust for scale (divide by scale since we'll multiply by scale when rendering)
     x = x / scale;
@@ -155,26 +131,6 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
     selection.removeAllRanges();
   };
 
-  const downloadFile = () => {
-    if (!source) return;
-
-    if (typeof source === 'string') {
-      // For URL source
-      const a = document.createElement('a');
-      a.href = source;
-      a.target = '_blank';
-      a.download = fileName || 'document.pdf';
-      a.click();
-    } else {
-      // For File source
-      const url = URL.createObjectURL(source);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = source.name;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  };
 
   if (!source) {
     return (
@@ -225,27 +181,19 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
           </span>
 
           <button
+            onClick={handleResetZoom}
+            className="p-2 rounded bg-gray-100 hover:bg-gray-200"
+          >
+            <Maximize className="w-4 h-4"/>
+          </button>
+
+          <button
             onClick={handleZoomIn}
             className="p-2 rounded bg-gray-100 hover:bg-gray-200"
           >
             <ZoomIn className="w-4 h-4"/>
           </button>
 
-          {/* Rotation control */}
-          <button
-            onClick={handleRotate}
-            className="p-2 rounded bg-gray-100 hover:bg-gray-200"
-          >
-            <RotateCw className="w-4 h-4"/>
-          </button>
-
-          {/* Download button */}
-          <button
-            onClick={downloadFile}
-            className="p-2 rounded bg-gray-100 hover:bg-gray-200"
-          >
-            <Download className="w-4 h-4"/>
-          </button>
         </div>
       </div>
 
@@ -273,7 +221,6 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
               <Page
                 pageNumber={currentPage}
                 scale={scale}
-                rotate={rotation}
                 renderTextLayer={true}
                 renderAnnotationLayer={false}
                 className="pdf-page"
@@ -287,48 +234,13 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
             {highlightedNotes
               .filter(note => note.pageNumber === currentPage)
               .map(note => {
-                // Calculate position based on rotation
-                let style: React.CSSProperties = {};
-
-                if (rotation === 0) {
-                  style = {
-                    left: note.position.x * scale,
-                    top: note.position.y * scale,
-                    width: note.position.width * scale,
-                    height: note.position.height * scale,
-                  };
-                } else if (rotation === 90) {
-                  const pageWidth = pdfPageRef.current?.clientWidth || 0;
-                  style = {
-                    left: note.position.y * scale,
-                    top: pageWidth - (note.position.x + note.position.width) * scale,
-                    width: note.position.height * scale,
-                    height: note.position.width * scale,
-                    transform: 'rotate(90deg)',
-                    transformOrigin: 'top left',
-                  };
-                } else if (rotation === 180) {
-                  const pageWidth = pdfPageRef.current?.clientWidth || 0;
-                  const pageHeight = pdfPageRef.current?.clientHeight || 0;
-                  style = {
-                    left: pageWidth - (note.position.x + note.position.width) * scale,
-                    top: pageHeight - (note.position.y + note.position.height) * scale,
-                    width: note.position.width * scale,
-                    height: note.position.height * scale,
-                    transform: 'rotate(180deg)',
-                    transformOrigin: 'center',
-                  };
-                } else if (rotation === 270) {
-                  const pageHeight = pdfPageRef.current?.clientHeight || 0;
-                  style = {
-                    left: pageHeight - (note.position.y + note.position.height) * scale,
-                    top: note.position.x * scale,
-                    width: note.position.height * scale,
-                    height: note.position.width * scale,
-                    transform: 'rotate(270deg)',
-                    transformOrigin: 'top left',
-                  };
-                }
+                // Set position
+                const style: React.CSSProperties = {
+                  left: note.position.x * scale,
+                  top: note.position.y * scale,
+                  width: note.position.width * scale,
+                  height: note.position.height * scale,
+                };
 
                 return (
                   <div
