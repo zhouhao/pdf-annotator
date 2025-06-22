@@ -3,7 +3,7 @@ import {Document, Page, pdfjs} from 'react-pdf';
 import {ChevronLeft, ChevronRight, Download, RotateCw, ZoomIn, ZoomOut} from 'lucide-react';
 import {Note, PdfSource, Selection} from '../types/pdf';
 
-// 设置PDF.js worker
+// Set up PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
   import.meta.url,
@@ -42,9 +42,9 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
   };
 
   const handleDocumentLoadError = (error: Error) => {
-    console.error('PDF加载失败:', error);
+    console.error('PDF loading failed:', error);
     setIsLoading(false);
-    alert('PDF文件加载失败，请检查文件是否损坏');
+    alert('PDF file loading failed, please check if the file is corrupted');
   };
 
   const handleZoomIn = () => {
@@ -88,7 +88,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
-  // 处理文本选择
+  // Handle text selection
   const handleTextSelection = () => {
     const selection = window.getSelection();
     if (!selection || selection.isCollapsed || !pageRef.current) return;
@@ -179,17 +179,17 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
   if (!source) {
     return (
       <div className="flex-1 flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500">请上传PDF文件或输入URL开始阅读</p>
+        <p className="text-gray-500">Please upload a PDF file or enter a URL to start reading</p>
       </div>
     );
   }
 
   return (
     <div className="flex-1 flex flex-col bg-gray-100">
-      {/* 工具栏 */}
+      {/* Toolbar */}
       <div className="bg-white border-b border-gray-200 p-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          {/* 页面导航 */}
+          {/* Page navigation */}
           <button
             onClick={handlePrevPage}
             disabled={currentPage <= 1}
@@ -212,7 +212,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
-          {/* 缩放控制 */}
+          {/* Zoom control */}
           <button
             onClick={handleZoomOut}
             className="p-2 rounded bg-gray-100 hover:bg-gray-200"
@@ -231,7 +231,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
             <ZoomIn className="w-4 h-4"/>
           </button>
 
-          {/* 旋转控制 */}
+          {/* Rotation control */}
           <button
             onClick={handleRotate}
             className="p-2 rounded bg-gray-100 hover:bg-gray-200"
@@ -239,7 +239,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
             <RotateCw className="w-4 h-4"/>
           </button>
 
-          {/* 下载按钮 */}
+          {/* Download button */}
           <button
             onClick={downloadFile}
             className="p-2 rounded bg-gray-100 hover:bg-gray-200"
@@ -249,7 +249,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
         </div>
       </div>
 
-      {/* PDF显示区域 */}
+      {/* PDF display area */}
       <div className="flex-1 overflow-auto p-4">
         <div
           ref={pageRef}
@@ -259,7 +259,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
           <div className="relative inline-block shadow-lg">
             {isLoading && (
               <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
-                <div className="text-gray-600">加载中...</div>
+                <div className="text-gray-600">Loading...</div>
               </div>
             )}
 
@@ -267,8 +267,8 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
               file={source}
               onLoadSuccess={handleDocumentLoadSuccess}
               onLoadError={handleDocumentLoadError}
-              loading={<div className="p-8 text-center text-gray-600">加载PDF文档中...</div>}
-              error={<div className="p-8 text-center text-red-600">PDF文档加载失败</div>}
+              loading={<div className="p-8 text-center text-gray-600">Loading PDF document...</div>}
+              error={<div className="p-8 text-center text-red-600">PDF document loading failed</div>}
             >
               <Page
                 pageNumber={currentPage}
@@ -277,8 +277,8 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                 renderTextLayer={true}
                 renderAnnotationLayer={false}
                 className="pdf-page"
-                loading={<div className="p-8 text-center text-gray-600">加载页面中...</div>}
-                error={<div className="p-8 text-center text-red-600">页面加载失败</div>}
+                loading={<div className="p-8 text-center text-gray-600">Loading page...</div>}
+                error={<div className="p-8 text-center text-red-600">Page loading failed</div>}
                 inputRef={pdfPageRef}
               />
             </Document>
