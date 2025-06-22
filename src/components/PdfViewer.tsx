@@ -283,7 +283,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
               />
             </Document>
 
-            {/* 高亮显示备注位置 */}
+            {/* Highlight notes position */}
             {highlightedNotes
               .filter(note => note.pageNumber === currentPage)
               .map(note => {
@@ -342,10 +342,10 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
         </div>
       </div>
 
-      {/* 操作提示 */}
+      {/* Operation tips */}
       <div className="bg-gray-50 border-t border-gray-200 p-2">
         <p className="text-xs text-gray-500 text-center">
-          提示：选择文本添加备注 • 使用方向键翻页 • 使用 +/- 键缩放
+          Tips: Select text to add notes • Use arrow keys to turn pages • Use +/- keys to zoom
         </p>
       </div>
     </div>
