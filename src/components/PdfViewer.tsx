@@ -1,9 +1,9 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Document, Page, pdfjs} from 'react-pdf';
-import {ChevronLeft, ChevronRight, Download, RotateCw, ZoomIn, ZoomOut} from 'lucide-react';
+import {ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Maximize} from 'lucide-react';
 import {Note, PdfSource, Selection} from '../types/pdf';
 
-// 设置PDF.js worker
+// Set up PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
   import.meta.url,
@@ -31,7 +31,6 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
                                                       fileName,
                                                     }) => {
   const [scale, setScale] = useState(1.2);
-  const [rotation, setRotation] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const pageRef = useRef<HTMLDivElement>(null);
   const pdfPageRef = useRef<HTMLDivElement>(null);
@@ -42,9 +41,9 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
   };
 
   const handleDocumentLoadError = (error: Error) => {
-    console.error('PDF加载失败:', error);
+    console.error('PDF loading failed:', error);
     setIsLoading(false);
-    alert('PDF文件加载失败，请检查文件是否损坏');
+    alert('PDF file loading failed, please check if the file is corrupted');
   };
 
   const handleZoomIn = () => {
@@ -55,9 +54,10 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
     setScale(prev => Math.max(prev - 0.2, 0.5));
   };
 
-  const handleRotate = () => {
-    setRotation(prev => (prev + 90) % 360);
+  const handleResetZoom = () => {
+    setScale(1.0);
   };
+
 
   const handlePrevPage = () => {
     if (currentPage > 1) {
@@ -88,7 +88,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
-  // 处理文本选择
+  // Handle text selection
   const handleTextSelection = () => {
     const selection = window.getSelection();
     if (!selection || selection.isCollapsed || !pageRef.current) return;
@@ -104,35 +104,11 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
 
     const containerRect = relativeContainer.getBoundingClientRect();
 
-    // Calculate position based on rotation
+    // Calculate position
     let x = rect.left - containerRect.left;
     let y = rect.top - containerRect.top;
     let width = rect.width;
     let height = rect.height;
-
-    // Adjust position based on rotation
-    if (rotation === 90) {
-      const pageWidth = pdfPageRef.current?.clientWidth || 0;
-      const tempX = y;
-      y = pageWidth - x - width;
-      x = tempX;
-      const tempWidth = width;
-      width = height;
-      height = tempWidth;
-    } else if (rotation === 180) {
-      const pageWidth = pdfPageRef.current?.clientWidth || 0;
-      const pageHeight = pdfPageRef.current?.clientHeight || 0;
-      x = pageWidth - x - width;
-      y = pageHeight - y - height;
-    } else if (rotation === 270) {
-      const pageHeight = pdfPageRef.current?.clientHeight || 0;
-      const tempY = x;
-      x = pageHeight - y - height;
-      y = tempY;
-      const tempWidth = width;
-      width = height;
-      height = tempWidth;
-    }
 
     // Adjust for scale (divide by scale since we'll multiply by scale when rendering)
     x = x / scale;
@@ -155,41 +131,21 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
     selection.removeAllRanges();
   };
 
-  const downloadFile = () => {
-    if (!source) return;
-
-    if (typeof source === 'string') {
-      // For URL source
-      const a = document.createElement('a');
-      a.href = source;
-      a.target = '_blank';
-      a.download = fileName || 'document.pdf';
-      a.click();
-    } else {
-      // For File source
-      const url = URL.createObjectURL(source);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = source.name;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-  };
 
   if (!source) {
     return (
       <div className="flex-1 flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500">请上传PDF文件或输入URL开始阅读</p>
+        <p className="text-gray-500">Please upload a PDF file or enter a URL to start reading</p>
       </div>
     );
   }
 
   return (
     <div className="flex-1 flex flex-col bg-gray-100">
-      {/* 工具栏 */}
+      {/* Toolbar */}
       <div className="bg-white border-b border-gray-200 p-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          {/* 页面导航 */}
+          {/* Page navigation */}
           <button
             onClick={handlePrevPage}
             disabled={currentPage <= 1}
@@ -212,7 +168,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
-          {/* 缩放控制 */}
+          {/* Zoom control */}
           <button
             onClick={handleZoomOut}
             className="p-2 rounded bg-gray-100 hover:bg-gray-200"
@@ -225,31 +181,23 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
           </span>
 
           <button
+            onClick={handleResetZoom}
+            className="p-2 rounded bg-gray-100 hover:bg-gray-200"
+          >
+            <Maximize className="w-4 h-4"/>
+          </button>
+
+          <button
             onClick={handleZoomIn}
             className="p-2 rounded bg-gray-100 hover:bg-gray-200"
           >
             <ZoomIn className="w-4 h-4"/>
           </button>
 
-          {/* 旋转控制 */}
-          <button
-            onClick={handleRotate}
-            className="p-2 rounded bg-gray-100 hover:bg-gray-200"
-          >
-            <RotateCw className="w-4 h-4"/>
-          </button>
-
-          {/* 下载按钮 */}
-          <button
-            onClick={downloadFile}
-            className="p-2 rounded bg-gray-100 hover:bg-gray-200"
-          >
-            <Download className="w-4 h-4"/>
-          </button>
         </div>
       </div>
 
-      {/* PDF显示区域 */}
+      {/* PDF display area */}
       <div className="flex-1 overflow-auto p-4">
         <div
           ref={pageRef}
@@ -259,7 +207,7 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
           <div className="relative inline-block shadow-lg">
             {isLoading && (
               <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
-                <div className="text-gray-600">加载中...</div>
+                <div className="text-gray-600">Loading...</div>
               </div>
             )}
 
@@ -267,68 +215,32 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
               file={source}
               onLoadSuccess={handleDocumentLoadSuccess}
               onLoadError={handleDocumentLoadError}
-              loading={<div className="p-8 text-center text-gray-600">加载PDF文档中...</div>}
-              error={<div className="p-8 text-center text-red-600">PDF文档加载失败</div>}
+              loading={<div className="p-8 text-center text-gray-600">Loading PDF document...</div>}
+              error={<div className="p-8 text-center text-red-600">PDF document loading failed</div>}
             >
               <Page
                 pageNumber={currentPage}
                 scale={scale}
-                rotate={rotation}
                 renderTextLayer={true}
                 renderAnnotationLayer={false}
                 className="pdf-page"
-                loading={<div className="p-8 text-center text-gray-600">加载页面中...</div>}
-                error={<div className="p-8 text-center text-red-600">页面加载失败</div>}
+                loading={<div className="p-8 text-center text-gray-600">Loading page...</div>}
+                error={<div className="p-8 text-center text-red-600">Page loading failed</div>}
                 inputRef={pdfPageRef}
               />
             </Document>
 
-            {/* 高亮显示备注位置 */}
+            {/* Highlight notes position */}
             {highlightedNotes
               .filter(note => note.pageNumber === currentPage)
               .map(note => {
-                // Calculate position based on rotation
-                let style: React.CSSProperties = {};
-
-                if (rotation === 0) {
-                  style = {
-                    left: note.position.x * scale,
-                    top: note.position.y * scale,
-                    width: note.position.width * scale,
-                    height: note.position.height * scale,
-                  };
-                } else if (rotation === 90) {
-                  const pageWidth = pdfPageRef.current?.clientWidth || 0;
-                  style = {
-                    left: note.position.y * scale,
-                    top: pageWidth - (note.position.x + note.position.width) * scale,
-                    width: note.position.height * scale,
-                    height: note.position.width * scale,
-                    transform: 'rotate(90deg)',
-                    transformOrigin: 'top left',
-                  };
-                } else if (rotation === 180) {
-                  const pageWidth = pdfPageRef.current?.clientWidth || 0;
-                  const pageHeight = pdfPageRef.current?.clientHeight || 0;
-                  style = {
-                    left: pageWidth - (note.position.x + note.position.width) * scale,
-                    top: pageHeight - (note.position.y + note.position.height) * scale,
-                    width: note.position.width * scale,
-                    height: note.position.height * scale,
-                    transform: 'rotate(180deg)',
-                    transformOrigin: 'center',
-                  };
-                } else if (rotation === 270) {
-                  const pageHeight = pdfPageRef.current?.clientHeight || 0;
-                  style = {
-                    left: pageHeight - (note.position.y + note.position.height) * scale,
-                    top: note.position.x * scale,
-                    width: note.position.height * scale,
-                    height: note.position.width * scale,
-                    transform: 'rotate(270deg)',
-                    transformOrigin: 'top left',
-                  };
-                }
+                // Set position
+                const style: React.CSSProperties = {
+                  left: note.position.x * scale,
+                  top: note.position.y * scale,
+                  width: note.position.width * scale,
+                  height: note.position.height * scale,
+                };
 
                 return (
                   <div
@@ -342,10 +254,10 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
         </div>
       </div>
 
-      {/* 操作提示 */}
+      {/* Operation tips */}
       <div className="bg-gray-50 border-t border-gray-200 p-2">
         <p className="text-xs text-gray-500 text-center">
-          提示：选择文本添加备注 • 使用方向键翻页 • 使用 +/- 键缩放
+          Tips: Select text to add notes • Use arrow keys to turn pages • Use +/- keys to zoom
         </p>
       </div>
     </div>

@@ -84,15 +84,15 @@ function App() {
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">
-      {/* 头部标题栏 */}
+      {/* Header title bar */}
       <header className="bg-white border-b border-gray-200 shadow-sm">
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <BookOpen className="w-8 h-8 text-blue-600" />
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">PDF阅读器</h1>
-                <p className="text-sm text-gray-600">专业的PDF阅读和备注工具</p>
+                <h1 className="text-2xl font-bold text-gray-900">PDF Reader</h1>
+                <p className="text-sm text-gray-600">Professional PDF reading and annotation tool</p>
               </div>
             </div>
 
@@ -119,7 +119,7 @@ function App() {
                       onClick={() => handleUrlSubmit(urlInput)}
                       className="px-3 py-1 text-sm bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 transition-colors"
                     >
-                      加载
+                      Load
                     </button>
                   </div>
                   <FileUpload onFileSelect={handleFileSelect} hasFile={true} />
@@ -139,7 +139,7 @@ function App() {
                     onClick={() => handleUrlSubmit(urlInput)}
                     className="px-3 py-1 text-sm bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 transition-colors"
                   >
-                    加载
+                    Load
                   </button>
                 </div>
               </div>
@@ -148,13 +148,13 @@ function App() {
         </div>
       </header>
 
-      {/* 主内容区域 */}
+      {/* Main content area */}
       <main className="flex-1 overflow-hidden">
         {!pdfSource ? (
           <FileUpload onFileSelect={handleFileSelect} hasFile={false} />
         ) : (
           <PanelGroup direction="horizontal" className="h-full">
-            {/* 左侧缩略图面板 */}
+            {/* Left thumbnail panel */}
             <Panel defaultSize={20} minSize={15} maxSize={30}>
               <ThumbnailPanel
                 source={pdfSource}
@@ -167,7 +167,7 @@ function App() {
 
             <PanelResizeHandle className="w-2 bg-gray-200 hover:bg-gray-300 transition-colors" />
 
-            {/* 中间PDF阅读器 */}
+            {/* Middle PDF reader */}
             <Panel defaultSize={60} minSize={40}>
               <PdfViewer
                 source={pdfSource}
@@ -183,7 +183,7 @@ function App() {
 
             <PanelResizeHandle className="w-2 bg-gray-200 hover:bg-gray-300 transition-colors" />
 
-            {/* 右侧备注面板 */}
+            {/* Right notes panel */}
             <Panel defaultSize={20} minSize={15} maxSize={35}>
               <NotesPanel
                 notes={notes}
@@ -196,7 +196,7 @@ function App() {
         )}
       </main>
 
-      {/* 备注添加模态框 */}
+      {/* Note addition modal */}
       <NoteModal
         isOpen={isNoteModalOpen}
         selection={selectedText}

@@ -14,7 +14,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect, hasFile })
     if (file && file.type === 'application/pdf') {
       onFileSelect(file);
     } else {
-      alert('请选择一个有效的PDF文件');
+      alert('Please select a valid PDF file');
     }
   };
 
@@ -24,7 +24,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect, hasFile })
     if (file && file.type === 'application/pdf') {
       onFileSelect(file);
     } else {
-      alert('请选择一个有效的PDF文件');
+      alert('Please select a valid PDF file');
     }
   };
 
@@ -43,7 +43,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect, hasFile })
         className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
       >
         <FileText className="w-4 h-4" />
-        更换PDF文件
+        Change PDF File
         <input
           ref={fileInputRef}
           type="file"
@@ -65,16 +65,16 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect, hasFile })
       >
         <Upload className="w-12 h-12 mx-auto text-gray-400 mb-4" />
         <h3 className="text-lg font-medium text-gray-900 mb-2">
-          上传PDF文件
+          Upload PDF File
         </h3>
         <p className="text-gray-600 mb-4">
-          拖拽PDF文件到此处，或点击选择文件
+          Drag PDF file here, or click to select file
         </p>
         <button className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-          选择文件
+          Select File
         </button>
         <p className="text-sm text-gray-500 mt-2">
-          支持PDF格式文件
+          Supports PDF format files
         </p>
         <input
           ref={fileInputRef}
